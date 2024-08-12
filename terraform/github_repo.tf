@@ -10,7 +10,7 @@ resource "random_password" "webhook_secret" {
 }
 
 resource "github_repository_webhook" "pull_request_webhook" {
-  repository = github_repository.webhookToAws.name
+  repository = github_repository.whToAws.name
   events     = ["pull_request"]
 
   configuration {
