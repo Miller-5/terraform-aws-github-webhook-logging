@@ -1,0 +1,36 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "apigateway:*",
+          "iam:CreateRole",
+          "iam:AttachRolePolicy",
+          "iam:PassRole",
+          "iam:CreatePolicy",
+          "iam:GetRole",
+          "iam:UpdateRole",
+          "iam:DeleteRole",
+          "iam:DeletePolicy",
+          "sqs:CreateQueue",
+          "sqs:GetQueueUrl",
+          "sqs:DeleteQueue",
+          "sqs:SetQueueAttributes",
+          "sqs:GetQueueAttributes",
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "lambda:*",
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:CreateBucket",
+          "s3:DeleteBucket",
+          "s3:PutBucketPolicy",
+          "s3:GetBucketPolicy"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
