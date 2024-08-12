@@ -23,5 +23,13 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy with Terraform
-        run: terraform apply -auto-approve
+      - name: Initialize Terraform
+        working-directory: ./terraform
+        run: terraform init
+
+      - name: Apply Terraform
+        working-directory: ./terraform
+        env:
+          TF_VAR_github_token: ${{ secrets.TF_VAR_github_token }}
+          TF_VAR_github_owner: ${{ secrets.TF_VAR_github_owner }}
+        run: plan

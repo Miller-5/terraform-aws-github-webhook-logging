@@ -10,7 +10,11 @@ Put the following secrets in the terraform github:
 * AWS role for github actions - AWS_ROLE_TO_ASSUME
 * AWS region - AWS_REGION
 
+Create s3 bucket for terraform backend
 
+Create tf secrets for github provider (To create github repo)
+* TF_VAR_github_token
+* TF_VAR_github_owner
 
 
 <!--
