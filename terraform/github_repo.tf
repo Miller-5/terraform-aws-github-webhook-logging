@@ -1,7 +1,7 @@
-resource "github_repository" "webhookToAws" {
+resource "github_repository" "whToAws" {
   name        = var.github_repository_name
-  description = "This repo is a part of Miller-5/terraform-aws-github-webhook-logging repository"
-  private     = false # This is false for demonstration purposes  
+  description = "This repo is a part of terraform-aws-github-webhook-logging repository"
+  visibility = "public" # This is public for demonstration purposes  
 }
 
 resource "random_password" "webhook_secret" {
