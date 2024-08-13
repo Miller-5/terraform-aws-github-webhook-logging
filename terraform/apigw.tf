@@ -62,6 +62,9 @@ resource "aws_lambda_function" "github_webhook_authorizer" {
   runtime          = "python3.8"
   source_code_hash = filebase64sha256("authorizer_function.zip")
 
+  kms_key_arn = aws_kms_key.lambda_key.arn
+
+
   environment {
     variables = {
       WEBHOOK_SECRET = random_password.webhook_secret.result
