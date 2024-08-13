@@ -1,0 +1,75 @@
+### API Gateway
+
+resource "aws_api_gateway_rest_api" "github_webhook_api" {
+  name        = "GitHubWebhookAPI"
+}
+
+resource "aws_api_gateway_resource" "webhook" {
+  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+  parent_id   = aws_api_gateway_rest_api.github_webhook_api.root_resource_id
+  path_part   = "webhook"
+}
+
+resource "aws_api_gateway_authorizer" "github_webhook_authorizer" {
+  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+  name        = "GitHubWebhookAuthorizer"
+  type        = "TOKEN"
+  authorizer_uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.github_webhook_authorizer.arn}/invocations"
+  identity_source = "method.request.header.Authorization"
+}
+
+resource "aws_api_gateway_method" "post_method" {
+  rest_api_id   = aws_api_gateway_rest_api.github_webhook_api.id
+  resource_id   = aws_api_gateway_resource.webhook.id
+  http_method   = "POST"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.github_webhook_authorizer.id
+}
+
+
+resource "aws_api_gateway_integration" "lambda_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.github_webhook_api.id
+  resource_id             = aws_api_gateway_resource.webhook.id
+  http_method             = aws_api_gateway_method.post_method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.github_webhook_authorizer.invoke_arn
+
+  integration_responses {
+    status_code = "200"
+  }
+}
+
+resource "aws_api_gateway_method_response" "method_response" {
+  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+  resource_id = aws_api_gateway_resource.webhook.id
+  http_method = aws_api_gateway_method.post_method.http_method
+  status_code = "200"
+}
+
+resource "aws_api_gateway_deployment" "github_webhook_deployment" {
+  depends_on  = [aws_api_gateway_integration.lambda_integration]
+  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+  stage_name  = "prod"
+}
+
+
+
+### Lambda Authorizer
+
+resource "aws_lambda_function" "github_webhook_authorizer" {
+  filename         = "authorizer_function.zip"  # Upload your Lambda code as a .zip file
+  function_name    = "github_webhook_authorizer"
+  role             = aws_iam_role.lambda_exec_role.arn
+  handler          = "webhookSecretAuth.lambda_handler"
+  runtime          = "python3.8"
+  source_code_hash = filebase64sha256("authorizer_function.zip")
+
+  environment {
+    variables = {
+      WEBHOOK_SECRET = random_password.webhook_secret.result
+    }
+  }
+
+  timeout = 5
+}
