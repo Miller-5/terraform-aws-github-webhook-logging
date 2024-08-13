@@ -35,6 +35,9 @@ resource "aws_api_gateway_integration" "sqs_integration" {
   type                    = "AWS"
   uri                     = "arn:aws:apigateway:${var.aws_region}:sqs:path/${data.aws_caller_identity.current.account_id}/${aws_sqs_queue.webhook_sqs.name}"
 
+  request_parameters = {
+    "integration.request.header.Content-Type" = "'application/x-www-form-urlencoded'"
+  }
 
   request_templates = {
     "application/json" = <<EOF
