@@ -29,6 +29,9 @@ resource "aws_iam_role" "lambda_exec_role" {
             "kms:Encrypt",
             "kms:GenerateDataKey*",
             "kms:DescribeKey",
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
           ],
           Resource = "*"
         }
