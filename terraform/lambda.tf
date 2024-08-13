@@ -49,6 +49,8 @@ data "aws_kms_key" "lambda_default_key" {
   key_id = "alias/aws/lambda"
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_kms_key" "lambda_default_key_policy" {
   key_id = data.aws_kms_key.lambda_default_key.key_id
 
