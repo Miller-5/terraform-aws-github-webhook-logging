@@ -51,6 +51,29 @@ EOF
   credentials = aws_iam_role.api_gateway_sqs_role.arn
 }
 
+resource "aws_api_gateway_integration_response" "default_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+  resource_id = aws_api_gateway_resource.webhook.id
+  http_method = aws_api_gateway_method.post_method.http_method
+  status_code = "200"  # Ensure you have an integration response for each status code you expect
+
+  response_parameters = {
+    "method.response.header.Content-Type" = "'application/json'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "default_method_response" {
+  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+  resource_id = aws_api_gateway_resource.webhook.id
+  http_method = aws_api_gateway_method.post_method.http_method
+  status_code = "200"  # Ensure this matches the status code in the integration response
+
+  response_parameters = {
+    "method.response.header.Content-Type" = true
+  }
+}
+
+
 
 resource "aws_api_gateway_method_response" "method_response" {
   rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
