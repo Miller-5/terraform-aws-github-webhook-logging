@@ -41,7 +41,13 @@ resource "aws_api_gateway_integration" "sqs_integration" {
 
   request_templates = {
     "application/json" = <<EOF
+#set($inputRoot = $input.path('$'))
+#if($inputRoot.action == 'closed' && $inputRoot.pull_request.merged == true)
 Action=SendMessage&MessageBody=$input.body
+#else
+  #set($context.responseOverride.status = 200)
+  {"status":"ignored"}
+#end
 EOF
   }
 
