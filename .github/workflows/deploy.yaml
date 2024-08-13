@@ -10,7 +10,7 @@ permissions: # Workflow permissions for github API
   contents: read
 
 jobs:
-  plan:
+  delpoy:
     runs-on: ubuntu-22.04
 
     steps:
@@ -23,23 +23,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Initialize Terraform # Init
+      - name: Initialize Terraform
         working-directory: ./terraform
         run: terraform init
 
-      - name: Plan Terraform # Plan
-        working-directory: ./terraform
-        env:
-          TF_VAR_github_token: ${{ secrets.TF_VAR_github_token }}
-          TF_VAR_github_owner: ${{ secrets.TF_VAR_github_owner }}
-        run: terraform plan
-
-
-  production_deploy:
-    runs-on: ubuntu-22.04
-    needs: plan
-    steps:
-      - name: Apply Terraform # Apply
+      - name: Plan Terraform
         working-directory: ./terraform
         env:
           TF_VAR_github_token: ${{ secrets.TF_VAR_github_token }}
