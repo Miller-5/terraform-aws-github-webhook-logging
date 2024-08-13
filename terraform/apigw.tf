@@ -55,7 +55,7 @@ resource "aws_api_gateway_deployment" "github_webhook_deployment" {
 ### Lambda Authorizer
 
 resource "aws_lambda_function" "github_webhook_authorizer" {
-  filename         = "authorizer_function.zip"  # Upload your Lambda code as a .zip file
+  filename         = "authorizer_function.zip"
   function_name    = "github_webhook_authorizer"
   role             = aws_iam_role.lambda_exec_role.arn
   handler          = "webhookSecretAuth.lambda_handler"
