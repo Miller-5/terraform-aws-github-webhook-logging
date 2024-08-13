@@ -2,6 +2,12 @@
 
 Create github repository for terraform code
 
+Create aws OIDC for github actions:
+aws iam create-open-id-connect-provider \
+    --url https://token.actions.githubusercontent.com \
+    --client-id-list sts.amazonaws.com \
+    --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
+
 
 Apply Policy & Role for github terraform repo (See related files)
 
