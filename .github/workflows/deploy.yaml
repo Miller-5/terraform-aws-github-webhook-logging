@@ -5,13 +5,13 @@ on:
     branches:
       - develop
 
-permissions:
+permissions: # Workflow permissions for github API
   id-token: write
   contents: read
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  plan:
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
@@ -23,13 +23,29 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Initialize Terraform
+      - name: Initialize Terraform # Init
         working-directory: ./terraform
         run: terraform init
 
-      - name: Apply Terraform
+      - name: Plan Terraform # Plan
         working-directory: ./terraform
         env:
           TF_VAR_github_token: ${{ secrets.TF_VAR_github_token }}
           TF_VAR_github_owner: ${{ secrets.TF_VAR_github_owner }}
         run: terraform plan
+
+  manual_approval:
+    runs-on: ubuntu-22.04
+    needs: plan
+    steps:
+      - name: Await Approval
+        uses: stefanprodan/approval-action@v1
+        with:
+          message: "Do you approve this deployment?"
+
+  production_deploy:
+    runs-on: ubuntu-22.04
+    needs: manual_approval
+    steps:
+      - name: Apply Terraform # Apply
+        run: terraform apply
