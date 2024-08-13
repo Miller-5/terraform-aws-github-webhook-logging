@@ -27,15 +27,26 @@ resource "aws_api_gateway_method" "post_method" {
 }
 
 
-resource "aws_api_gateway_integration" "lambda_integration" {
+resource "aws_api_gateway_integration" "sqs_integration" {
   rest_api_id             = aws_api_gateway_rest_api.github_webhook_api.id
   resource_id             = aws_api_gateway_resource.webhook.id
   http_method             = aws_api_gateway_method.post_method.http_method
   integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.github_webhook_authorizer.invoke_arn
+  type                    = "AWS"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:sqs:path/${aws_sqs_queue.webhook_sqs.name}"
 
+  request_templates = {
+    "application/json" = <<EOF
+{
+  "Action": "SendMessage",
+  "MessageBody": "$util.base64Encode($input.body)"
 }
+EOF
+  }
+
+  credentials = aws_iam_role.api_gateway_sqs_role.arn
+}
+
 
 resource "aws_api_gateway_method_response" "method_response" {
   rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
@@ -80,5 +91,41 @@ resource "aws_lambda_permission" "allow_apigw_invoke" {
   function_name = aws_lambda_function.github_webhook_authorizer.function_name
   principal     = "apigateway.amazonaws.com"
 
-  source_arn = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.github_webhook_api.id}/*/POST/webhook"
+  source_arn = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.github_webhook_api.id}/*"
+}
+
+
+### Roles
+
+resource "aws_iam_role" "api_gateway_sqs_role" {
+  name = "api-gateway-sqs-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "apigateway.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  inline_policy {
+    name = "sqs_send_message"
+    policy = jsonencode({
+      Version = "2012-10-17",
+      Statement = [
+        {
+          Effect = "Allow",
+          Action = [
+            "sqs:SendMessage"
+          ],
+          Resource = aws_sqs_queue.webhook_sqs.arn
+        }
+      ]
+    })
+  }
 }

@@ -1,13 +1,21 @@
-import hashlib
-import hmac
 import os
+import hmac
+import hashlib
 
 def lambda_handler(event, context):
-    token = event['authorizationToken']
+    # Extract the token from the authorization header
+    token = event.get('authorizationToken')
+    if not token:
+        raise Exception("Unauthorized!")
+
+    # Get the secret from environment variables
     secret = os.environ['WEBHOOK_SECRET']
-    signature = 'sha256=' + hmac.new(secret.encode(), event['body'].encode(), hashlib.sha256).hexdigest()
     
-    if hmac.compare_digest(token, signature):
+    # Example of a precomputed expected signature
+    expected_signature = "sha256=<your_expected_signature_here>"
+
+    # Compare the incoming token with the expected signature
+    if hmac.compare_digest(token, expected_signature):
         return {
             "principalId": "user",
             "policyDocument": {
@@ -22,16 +30,4 @@ def lambda_handler(event, context):
             }
         }
     else:
-        return {
-            "principalId": "user",
-            "policyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Action": "execute-api:Invoke",
-                        "Effect": "Deny",
-                        "Resource": event['methodArn']
-                    }
-                ]
-            }
-        }
+        raise Exception("Unauthorized!")
