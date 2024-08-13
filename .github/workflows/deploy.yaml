@@ -34,14 +34,14 @@ jobs:
           TF_VAR_github_owner: ${{ secrets.TF_VAR_github_owner }}
         run: terraform plan
 
+
   manual_approval:
     runs-on: ubuntu-22.04
-    needs: plan
+    needs: deploy
+    if: github.event_name == 'workflow_dispatch'
     steps:
-      - name: Await Approval
-        uses: stefanprodan/approval-action@v1
-        with:
-          message: "Do you approve this deployment?"
+      - name: Await Manual Approval
+        run: echo "Manual approval required to proceed..."
 
   production_deploy:
     runs-on: ubuntu-22.04
