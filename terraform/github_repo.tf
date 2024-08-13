@@ -14,7 +14,7 @@ resource "github_repository_webhook" "pull_request_webhook" {
   events     = ["pull_request"]
 
   configuration {
-    url          = "https://${aws_api_gateway_rest_api.my_api.id}.execute-api.${var.aws_region}.amazonaws.com/${aws_api_gateway_deployment.api_deployment.stage_name}/webhook"
+    url          = "https://${aws_api_gateway_rest_api.my_api.id}.execute-api.${var.aws_region}.amazonaws.com/${aws_api_gateway_deployment.github_webhook_deployment.stage_name}/webhook"
     content_type = "json"
     insecure_ssl = false
     secret       = random_password.webhook_secret.result
