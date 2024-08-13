@@ -1,3 +1,9 @@
+### AWS
+
+variable "aws_region" {
+  default = "us-west-2"
+}
+
 ### Github
 
 variable "github_repository_name" {
