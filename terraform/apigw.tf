@@ -33,7 +33,8 @@ resource "aws_api_gateway_integration" "sqs_integration" {
   http_method             = aws_api_gateway_method.post_method.http_method
   integration_http_method = "POST"
   type                    = "AWS"
-  uri                     = "arn:aws:apigateway:${var.aws_region}:sqs:path/${aws_sqs_queue.webhook_sqs.name}"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:sqs:path/${data.aws_caller_identity.current.account_id}/${aws_sqs_queue.webhook_sqs.name}"
+
 
   request_templates = {
     "application/json" = <<EOF
