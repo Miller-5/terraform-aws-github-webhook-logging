@@ -15,6 +15,26 @@ resource "aws_iam_role" "lambda_exec_role" {
       }
     ]
   })
+
+  inline_policy {
+    name = "lambda_kms_permissions"
+
+    policy = jsonencode({
+      Version = "2012-10-17",
+      Statement = [
+        {
+          Effect = "Allow",
+          Action = [
+            "kms:Decrypt",
+            "kms:Encrypt",
+            "kms:GenerateDataKey*",
+            "kms:DescribeKey"
+          ],
+          Resource = "*"
+        }
+      ]
+    })
+  }
 }
 
 resource "aws_iam_policy_attachment" "lambda_basic_execution" {
