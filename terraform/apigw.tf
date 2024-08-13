@@ -35,9 +35,6 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.github_webhook_authorizer.invoke_arn
 
-  integration_responses {
-    status_code = "200"
-  }
 }
 
 resource "aws_api_gateway_method_response" "method_response" {
