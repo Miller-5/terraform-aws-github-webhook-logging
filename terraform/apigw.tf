@@ -41,10 +41,7 @@ resource "aws_api_gateway_integration" "sqs_integration" {
 
   request_templates = {
     "application/json" = <<EOF
-{
-  "Action": "SendMessage",
-  "MessageBody": "$util.base64Encode($input.body)"
-}
+Action=SendMessage&MessageBody=$input.body
 EOF
   }
 
