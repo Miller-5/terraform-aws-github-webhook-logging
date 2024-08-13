@@ -37,7 +37,7 @@ jobs:
 
   manual_approval:
     runs-on: ubuntu-22.04
-    needs: deploy
+    needs: plan
     if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Await Manual Approval
