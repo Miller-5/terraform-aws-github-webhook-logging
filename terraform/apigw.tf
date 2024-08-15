@@ -10,20 +10,29 @@ resource "aws_api_gateway_resource" "webhook" {
   path_part   = "webhook"
 }
 
-resource "aws_api_gateway_authorizer" "github_webhook_authorizer" {
-  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
-  name        = "GitHubWebhookAuthorizer"
-  type        = "TOKEN"
-  authorizer_uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.github_webhook_authorizer.arn}/invocations"
-  identity_source = "method.request.header.Authorization"
-}
+## Lambda authorizer
+
+# resource "aws_api_gateway_authorizer" "github_webhook_authorizer" {
+#   rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+#   name        = "GitHubWebhookAuthorizer"
+#   type        = "TOKEN"
+#   authorizer_uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.github_webhook_authorizer.arn}/invocations"
+#   identity_source = "method.request.header.Authorization"
+# }
 
 resource "aws_api_gateway_method" "post_method" {
   rest_api_id   = aws_api_gateway_rest_api.github_webhook_api.id
   resource_id   = aws_api_gateway_resource.webhook.id
   http_method   = "POST"
-  authorization = "CUSTOM"
-  authorizer_id = aws_api_gateway_authorizer.github_webhook_authorizer.id
+  authorization = "NONE"
+    # Basic Authorization happens by API GW and HMAC Validation by lambda function later on
+
+
+
+## Lambda authorizer implementation
+
+#   authorization = "CUSTOM"
+#   authorizer_id = aws_api_gateway_authorizer.github_webhook_authorizer.id
 }
 
 
@@ -41,8 +50,9 @@ resource "aws_api_gateway_integration" "sqs_integration" {
 
   request_templates = {
     "application/json" = <<EOF
+#set($signatureHeader = $input.params('X-Hub-Signature-256'))
 #set($inputRoot = $input.path('$'))
-#if($inputRoot.action == 'closed' && $inputRoot.pull_request.merged == true)
+#if($inputRoot.action == "closed" && $inputRoot.pull_request.merged == true && $signatureHeader.length() == 71)
 Action=SendMessage&MessageBody=$input.body
 #else
   #set($context.responseOverride.status = 200)
@@ -58,7 +68,7 @@ resource "aws_api_gateway_integration_response" "integration_response" {
   rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
   resource_id = aws_api_gateway_resource.webhook.id
   http_method = aws_api_gateway_method.post_method.http_method
-  status_code = "200"  # Ensure you have an integration response for each status code you expect
+  status_code = "200"
 
     response_templates = {
     "application/json" = ""
@@ -69,7 +79,7 @@ resource "aws_api_gateway_method_response" "method_response" {
   rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
   resource_id = aws_api_gateway_resource.webhook.id
   http_method = aws_api_gateway_method.post_method.http_method
-  status_code = "200"  # Ensure this matches the status code in the integration response
+  status_code = "200"
 
   response_models = {
     "application/json" = "Empty"
@@ -83,40 +93,16 @@ resource "aws_api_gateway_deployment" "github_webhook_deployment" {
   depends_on  = [aws_api_gateway_integration.sqs_integration]
   rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
   stage_name  = "prod"
-}
 
-
-
-### Lambda Authorizer
-
-resource "aws_lambda_function" "github_webhook_authorizer" {
-  filename         = "authorizer_function.zip"
-  function_name    = "github_webhook_authorizer"
-  role             = aws_iam_role.lambda_exec_role.arn
-  handler          = "webhookSecretAuth.lambda_handler"
-  runtime          = "python3.8"
-  source_code_hash = filebase64sha256("authorizer_function.zip")
-
-  kms_key_arn = aws_kms_key.lambda_key.arn
-
-
-  environment {
-    variables = {
-      WEBHOOK_SECRET = random_password.webhook_secret.result
-    }
+  triggers = {
+    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.github_webhook_api.body))
   }
 
-  timeout = 5
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-resource "aws_lambda_permission" "allow_apigw_invoke" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.github_webhook_authorizer.function_name
-  principal     = "apigateway.amazonaws.com"
-
-  source_arn = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.github_webhook_api.id}/*"
-}
 
 
 ### Roles
