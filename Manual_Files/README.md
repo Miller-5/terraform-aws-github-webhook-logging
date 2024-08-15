@@ -1,6 +1,6 @@
 ## Manual steps we need to do:
 
-Create github repository for terraform code
+Create github repository for terraform code (This one)
 
 Create aws OIDC for github actions:
 aws iam create-open-id-connect-provider \
@@ -9,14 +9,15 @@ aws iam create-open-id-connect-provider \
     --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
 
 
-Apply Policy & Role for github terraform repo (See related files)
+Apply Policy & Role for github terraform repo (See related files) with AWS CLI
 
 
-Put the following secrets in the terraform github:
-* AWS role for github actions - AWS_ROLE_TO_ASSUME
+Put the following secrets in the terraform github repository:
+* AWS role for github actions - AWS_ROLE_TO_ASSUME (from related file)
 * AWS region - AWS_REGION
 
-Create s3 bucket for terraform backend
+Create s3 bucket for terraform backend with AWS CLI
+
 
 Create tf secrets for github provider (To create github repo)
 * TF_VAR_github_token

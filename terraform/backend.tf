@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket         = "paul-miller-tf-backend"
+    bucket         = var.s3_terraform_backend_name
     key            = "terraform-aws-github-webhook-logging/terraform.tfstate"
-    region         = "us-west-2"
+    region         = var.aws_region
   }
 }

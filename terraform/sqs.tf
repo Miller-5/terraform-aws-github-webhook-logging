@@ -1,5 +1,12 @@
+## Main SQS
+
 resource "aws_sqs_queue" "webhook_sqs" {
   name = "github_webhook_sqs"
+
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.dlq.arn
+    maxReceiveCount     = 5  # Number of times a message is retried before being sent to the DLQ
+  })
 }
 
 resource "aws_sqs_queue_policy" "queue_policy" {
@@ -18,4 +25,10 @@ resource "aws_sqs_queue_policy" "queue_policy" {
       }
     ]
   })
+}
+
+## DLQ
+
+resource "aws_sqs_queue" "webhook_dlq_sqs" {
+  name = "github_webhook_DLQ_sqs"
 }
