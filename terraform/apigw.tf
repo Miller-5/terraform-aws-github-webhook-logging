@@ -89,24 +89,22 @@ resource "aws_api_gateway_method_response" "method_response" {
 
 
 
-resource "aws_api_gateway_deployment" "github_webhook_deployment" {
-  depends_on = [
-    aws_lambda_permission.allow_apigw_invoke,
-    aws_api_gateway_authorizer.github_webhook_authorizer,
-    aws_api_gateway_integration.sqs_integration
-  ]
+# resource "aws_api_gateway_deployment" "github_webhook_deployment" {
+#   depends_on = [
+#     aws_api_gateway_integration.sqs_integration
+#   ]
 
-  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
-  stage_name  = "prod"
+#   rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+#   stage_name  = "prod"
 
-  triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.github_webhook_api.body))
-  }
+#   triggers = {
+#     redeployment = sha1(jsonencode(aws_api_gateway_rest_api.github_webhook_api.body))
+#   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
 
 
