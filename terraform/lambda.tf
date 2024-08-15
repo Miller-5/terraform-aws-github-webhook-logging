@@ -2,14 +2,16 @@
 
 
 resource "aws_lambda_function" "github_webhook_processor" {
-  filename         = "webhookProcessor_function.zip"
+  filename         = "lambda_scripts/zips/webhookProcessor_function.zip"
   function_name    = "githubWebhookProcessor"
   role             = aws_iam_role.lambda_exec_role.arn
   handler          = "webhookProcessor.lambda_handler"
   runtime          = "python3.8"
   source_code_hash = filebase64sha256("webhookProcessor_function.zip")
 
-  kms_key_arn = aws_kms_key.lambda_key.arn
+  kms_key_arn   = aws_kms_key.lambda_key.arn
+  layers        = [aws_lambda_layer_version.requests_layer.arn]
+
 
 
   environment {
@@ -153,3 +155,11 @@ resource "aws_lambda_event_source_mapping" "sqs_trigger" {
   batch_size = 1  # Process messages one at a time
 }
 
+
+### Lambda layer for request python package
+
+resource "aws_lambda_layer_version" "requests_layer" {
+  filename          = "lambda_scripts/zips/requests_layer.zip"
+  layer_name        = "requests_layer"
+  compatible_runtimes = ["python3.8"]
+}

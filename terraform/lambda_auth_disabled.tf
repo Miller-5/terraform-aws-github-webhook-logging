@@ -10,7 +10,7 @@
 # ### Lambda Authorizer
 
 # resource "aws_lambda_function" "github_webhook_authorizer" {
-#   filename         = "authorizer_function.zip"
+#   filename         = "lambda_scripts/zips/authorizer_function.zip"
 #   function_name    = "github_webhook_authorizer"
 #   role             = aws_iam_role.lambda_exec_role.arn
 #   handler          = "webhookSecretAuth.lambda_handler"

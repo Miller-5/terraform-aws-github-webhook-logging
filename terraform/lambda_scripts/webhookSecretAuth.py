@@ -1,3 +1,6 @@
+# This file is an example for how to use lambda as custom authenticator
+# for API GW. this file is not in use and therefor just an example
+
 import os
 import hmac
 import hashlib
