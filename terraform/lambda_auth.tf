@@ -84,8 +84,6 @@
 
 # ### KMS key for lambda
 
-# data "aws_caller_identity" "current" {}
-
 # resource "aws_kms_key" "lambda_key" {
 #   description             = "KMS key for encrypting Lambda environment variables"
 #   deletion_window_in_days = 10
