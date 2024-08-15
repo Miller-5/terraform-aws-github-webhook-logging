@@ -2,6 +2,13 @@
 
 resource "aws_api_gateway_rest_api" "github_webhook_api" {
   name        = "GitHubWebhookAPI"
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+
+  description = "API for handling GitHub webhooks"
+
 }
 
 resource "aws_api_gateway_resource" "webhook" {
