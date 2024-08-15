@@ -15,7 +15,7 @@
 #   role             = aws_iam_role.lambda_exec_role.arn
 #   handler          = "webhookSecretAuth.lambda_handler"
 #   runtime          = "python3.8"
-#   source_code_hash = filebase64sha256("authorizer_function.zip")
+#   source_code_hash = filebase64sha256("lambda_scripts/zips/authorizer_function.zip")
 
 #   kms_key_arn = aws_kms_key.lambda_key.arn
 

@@ -7,7 +7,7 @@ resource "aws_lambda_function" "github_webhook_processor" {
   role             = aws_iam_role.lambda_exec_role.arn
   handler          = "webhookProcessor.lambda_handler"
   runtime          = "python3.8"
-  source_code_hash = filebase64sha256("webhookProcessor_function.zip")
+  source_code_hash = filebase64sha256("lambda_scripts/zips/webhookProcessor_function.zip")
 
   kms_key_arn   = aws_kms_key.lambda_key.arn
   layers        = [aws_lambda_layer_version.requests_layer.arn]
