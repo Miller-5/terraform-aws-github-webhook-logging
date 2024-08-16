@@ -108,7 +108,11 @@ resource "aws_api_gateway_method_response" "method_response" {
 
 resource "aws_api_gateway_deployment" "github_webhook_deployment" {
   depends_on = [
-    aws_api_gateway_integration.sqs_integration
+    aws_api_gateway_rest_api.github_webhook_api,
+    aws_api_gateway_method.post_method,
+    aws_api_gateway_integration.sqs_integration,
+    aws_api_gateway_integration_response.integration_response,
+    aws_api_gateway_method_response.method_response
   ]
 
   rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
