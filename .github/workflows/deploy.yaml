@@ -32,4 +32,4 @@ jobs:
         env:
           TF_VAR_github_token: ${{ secrets.TF_VAR_github_token }}
           TF_VAR_github_owner: ${{ secrets.TF_VAR_github_owner }}
-        run: terraform apply -var-file=values.tfvars -auto-approve
+        run: terraform destroy -var-file=values.tfvars -auto-approve
