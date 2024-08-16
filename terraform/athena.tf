@@ -26,7 +26,7 @@ resource "aws_glue_catalog_table" "github_webhooks_table" {
     location = "s3://${aws_s3_bucket.github_webhook_bucket.id}/github-webhook/"
     input_format  = "org.apache.hadoop.mapred.TextInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
-    serde_info {
+    ser_de_info {
       serialization_library = "org.openx.data.jsonserde.JsonSerDe"
     }
 
