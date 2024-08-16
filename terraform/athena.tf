@@ -2,14 +2,16 @@ resource "aws_glue_catalog_database" "athena_database" {
   name = "github_webhooks_db"
 }
 
-resource "aws_athena_workgroup" "primary" {
-  name = "primary"
+resource "aws_athena_workgroup" "github_webhook" {
+  name = "github_webhook"
 
   configuration {
     result_configuration {
       output_location = "s3://${aws_s3_bucket.github_webhook_bucket.id}/athena_results/"
     }
   }
+
+  state = "ENABLED"
 }
 
 resource "aws_glue_catalog_table" "github_webhooks_table" {
