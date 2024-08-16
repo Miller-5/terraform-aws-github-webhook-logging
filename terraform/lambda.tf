@@ -58,7 +58,7 @@ resource "aws_iam_role" "lambda_exec_role" {
             "kms:GenerateDataKey*",
             "kms:DescribeKey",
           ],
-          Resource = "*"
+          Resource = "${aws_kms_key.lambda_key.arn}"
         }
       ]
     })
@@ -113,7 +113,7 @@ resource "aws_kms_key" "lambda_key" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid: "Enable IAM User Permissions",
+        Sid: "Enable IAM User Permissions", # This is for user root access
         Effect: "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
@@ -122,7 +122,7 @@ resource "aws_kms_key" "lambda_key" {
         Resource = "*"
       },
       {
-        Sid: "Allow Lambda Role to Use the Key",
+        Sid: "Allow Lambda Role to Use the Key", # This is for lambda access
         Effect: "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${aws_iam_role.lambda_exec_role.name}"
@@ -133,7 +133,7 @@ resource "aws_kms_key" "lambda_key" {
           "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ],
-        Resource = "*"
+        Resource = "${aws_kms_key.lambda_key.arn}"
       }
     ]
   })

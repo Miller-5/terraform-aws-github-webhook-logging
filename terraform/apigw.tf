@@ -34,7 +34,9 @@ resource "aws_api_gateway_method" "post_method" {
   authorization = "NONE"
     # Basic Authorization happens by API GW and HMAC Validation by lambda function later on
 
-
+  request_parameters = {
+    "method.request.header.X-Hub-Signature-256" = true
+  }
 
 ## Lambda authorizer implementation
 
@@ -51,6 +53,9 @@ resource "aws_api_gateway_integration" "sqs_integration" {
   type                    = "AWS"
   uri                     = "arn:aws:apigateway:${var.aws_region}:sqs:path/${data.aws_caller_identity.current.account_id}/${aws_sqs_queue.webhook_sqs.name}"
 
+  passthrough_behavior = "NEVER"
+
+
   request_parameters = {
     "integration.request.header.Content-Type" = "'application/x-www-form-urlencoded'"
   }
@@ -60,7 +65,7 @@ resource "aws_api_gateway_integration" "sqs_integration" {
 #set($signatureHeader = $input.params('X-Hub-Signature-256'))
 #set($inputRoot = $input.path('$'))
 #if($inputRoot.action == "closed" && $inputRoot.pull_request.merged == true && $signatureHeader.length() == 71)
-Action=SendMessage&MessageBody=$input.body
+Action=SendMessage&MessageBody=$util.urlEncode("$input.body")&MessageAttribute.1.Name=X-Hub-Signature-256&MessageAttribute.1.Value.StringValue=$signatureHeader&MessageAttribute.1.Value.DataType=String
 #else
   #set($context.responseOverride.status = 200)
   {"status":"ignored"}
@@ -148,4 +153,41 @@ resource "aws_iam_role" "api_gateway_sqs_role" {
       ]
     })
   }
+}
+
+
+
+### IP White list according to github webhooks
+
+data "http" "github_webhook_ips" {
+  url = "https://api.github.com/meta"
+
+  headers = {
+    Authorization = "Bearer ${var.github_token}"
+  }
+
+  response_body {
+    webhook_ips = jsondecode(body)["hooks"]
+  }
+}
+
+resource "aws_api_gateway_rest_api_policy" "api_policy" {
+  rest_api_id = aws_api_gateway_rest_api.github_webhook_api.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = "execute-api:Invoke",
+        Resource  = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.github_webhook_api.id}/*/*/*",
+        Condition = {
+          IpAddress = {
+            "aws:SourceIp" = data.http.github_webhook_ips.response_body["webhook_ips"]
+          }
+        }
+      }
+    ]
+  })
 }
