@@ -38,18 +38,8 @@ resource "aws_glue_catalog_table" "github_webhooks_table" {
     }
 
     columns {
-      name = "added"
-      type = "array<string>"
-    }
-
-    columns {
-      name = "removed"
-      type = "array<string>"
-    }
-
-    columns {
-      name = "modified"
-      type = "array<string>"
+      name = "changed_files"
+      type = "struct<added:array<string>,removed:array<string>,modified:array<string>>"
     }
   }
 }
@@ -57,8 +47,12 @@ resource "aws_glue_catalog_table" "github_webhooks_table" {
 # AWS Athena Query example:
 #
 #
-#SELECT repository, added, removed, modified
-#FROM github_webhooks_table
-#LIMIT 10;
+# SELECT 
+#   repository, 
+#   changed_files.added, 
+#   changed_files.removed, 
+#   changed_files.modified 
+# FROM github_webhooks_table
+# LIMIT 10;
 
 
