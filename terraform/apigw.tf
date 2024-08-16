@@ -161,14 +161,6 @@ resource "aws_iam_role" "api_gateway_sqs_role" {
 
 data "http" "github_webhook_ips" {
   url = "https://api.github.com/meta"
-
-  headers = {
-    Authorization = "Bearer ${var.github_token}"
-  }
-
-  response_body {
-    webhook_ips = jsondecode(body)["hooks"]
-  }
 }
 
 resource "aws_api_gateway_rest_api_policy" "api_policy" {
@@ -184,7 +176,7 @@ resource "aws_api_gateway_rest_api_policy" "api_policy" {
         Resource  = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.github_webhook_api.id}/*/*/*",
         Condition = {
           IpAddress = {
-            "aws:SourceIp" = data.http.github_webhook_ips.response_body["webhook_ips"]
+            "aws:SourceIp" = jsondecode(data.http.github_webhook_ips.body)["hooks"]
           }
         }
       }
