@@ -55,4 +55,10 @@ resource "aws_glue_catalog_table" "github_webhooks_table" {
 # FROM github_webhooks_table
 # LIMIT 10;
 
-
+# Example to use with AWS CLI:
+#
+# Run the query:
+# aws athena start-query-execution   --query-string "SELECT repository, changed_files.added, changed_files.removed, changed_files.modified FROM github_webhooks_table LIMIT 10;"   --query-execution-context Database=github_webhooks_db   --work-group github_webhook
+# 
+# Get query results:
+# aws athena get-query-results --query-execution-id [QUERY_EXECUTION_ID_FROM_PREVIOUS_COMMAND]
