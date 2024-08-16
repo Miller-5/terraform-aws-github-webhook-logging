@@ -173,7 +173,7 @@ resource "aws_api_gateway_rest_api_policy" "api_policy" {
         Effect    = "Allow",
         Principal = "*",
         Action    = "execute-api:Invoke",
-        Resource  = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.github_webhook_api.id}/*/*/*",
+        Resource  = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.github_webhook_api.id}/*/*/*",
         Condition = {
           IpAddress = {
             "aws:SourceIp" = jsondecode(data.http.github_webhook_ips.body)["hooks"]
