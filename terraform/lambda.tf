@@ -94,6 +94,21 @@ resource "aws_iam_role_policy" "lambda_kms_policy" {
   name = "lambda_kms_permissions"
   role = aws_iam_role.lambda_exec_role.id
 
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow", # This is for lambda access
+        Action = [
+          "kms:Decrypt",
+          "kms:Encrypt",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey",
+        ],
+        Resource = "${aws_kms_key.lambda_key.arn}"
+      }
+    ]
+  })
 }
 
 resource "aws_kms_key_policy" "lambda_key_policy_update" {
