@@ -43,26 +43,6 @@ resource "aws_iam_role" "lambda_exec_role" {
       }
     ]
   })
-
-  inline_policy {
-    name = "lambda_kms_permissions"
-
-    policy = jsonencode({
-      Version = "2012-10-17",
-      Statement = [
-        {
-          Effect = "Allow",
-          Action = [
-            "kms:Decrypt",
-            "kms:Encrypt",
-            "kms:GenerateDataKey*",
-            "kms:DescribeKey",
-          ],
-          Resource = "${aws_kms_key.lambda_key.arn}"
-        }
-      ]
-    })
-  }
 }
 
 # Basic role
@@ -103,17 +83,27 @@ resource "aws_iam_role_policy_attachment" "lambda_sqs_s3_policy_attachment" {
 
 
 
-### KMS key for lambda
+### KMS key & role for lambda
 
 resource "aws_kms_key" "lambda_key" {
   description             = "KMS key for encrypting Lambda environment variables"
-  deletion_window_in_days = 10
+  deletion_window_in_days = 30
+}
+
+resource "aws_iam_role_policy" "lambda_kms_policy" {
+  name = "lambda_kms_permissions"
+  role = aws_iam_role.lambda_exec_role.id
+
+}
+
+resource "aws_kms_key_policy" "lambda_key_policy_update" {
+  key_id = aws_kms_key.lambda_key.key_id
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Sid: "Enable IAM User Permissions", # This is for user root access
+        Sid: "Enable IAM User Permissions",
         Effect: "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
@@ -122,10 +112,10 @@ resource "aws_kms_key" "lambda_key" {
         Resource = "*"
       },
       {
-        Sid: "Allow Lambda Role to Use the Key", # This is for lambda access
+        Sid: "Allow Lambda Role to Use the Key",
         Effect: "Allow",
         Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${aws_iam_role.lambda_exec_role.name}"
+          AWS = aws_iam_role.lambda_exec_role.arn
         },
         Action = [
           "kms:Decrypt",
@@ -133,11 +123,13 @@ resource "aws_kms_key" "lambda_key" {
           "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ],
-        Resource = "*"
+        Resource = "${aws_kms_key.lambda_key.arn}"
       }
     ]
   })
 }
+
+
 
 resource "aws_kms_alias" "lambda_key_alias" {
   name          = "alias/lambdaKey"
