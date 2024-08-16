@@ -133,7 +133,7 @@ resource "aws_kms_key" "lambda_key" {
           "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ],
-        Resource = "${aws_kms_key.lambda_key.arn}"
+        Resource = "*"
       }
     ]
   })
