@@ -79,7 +79,7 @@ To set up and use this repo on our github & aws environment, we need to follow t
 
 ---
 
-## Interesting decisions choices
+## Interesting decision choices
 * Github 'files changed' section in PR webhooks is not included, instead, the webhook shows a github API link for the repository that shows files changed.
 Although this is a good idea to keep the payload lighter by not including it, it also creates the requirment to send a request to github API with github token that as for now theres no option to create automatically, which means that if we want to create repo scoped token (finegrained tokens, For better security) we need to do it manually after the terraform executed, which adds another manual step that can be avoided so I decided to use terraform github token that is also with limited permissions
 there is open issue regarding this topic:
