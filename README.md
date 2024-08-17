@@ -38,8 +38,27 @@ We have a github terraform repo (This one) that deploy the entire infrastructure
 * Lambda- Responsible for validating the webhook the standard way, filter the required parameters and send them to s3  
 > This lambda uses custom KMS to encrypt its environment variables, although its wasn't required, its a good way to present parts that would be relevant with FEDRAMP env's
 * S3- Stores our data and Athena query data
-* Athena- Used to query data for better experience (Optional)
+* Athena- Used to query data for better experience (Optional)  
+AWS Athena Query example:
+```sql
+ SELECT 
+   repository, 
+   changed_files.added, 
+   changed_files.removed, 
+   changed_files.modified 
+ FROM github_webhooks_table
+ LIMIT 10;
+```
+ Example to use with AWS CLI-  
+ Run the query:
+ ```bash
+ aws athena start-query-execution   --query-string "SELECT repository, changed_files.added, changed_files.removed, changed_files.modified FROM github_webhooks_table LIMIT 10;"   --query-execution-context Database=github_webhooks_db   --work-group github_webhook
+ ```
 
+ Get query results:
+ ```bash
+ aws athena get-query-results --query-execution-id [QUERY_EXECUTION_ID_FROM_PREVIOUS_COMMAND]
+```
 
 
 
@@ -53,7 +72,7 @@ To set up and use this repo on our github & aws environment, we need to follow t
 
 ## Interesting decisions choices
 * Github 'files changed' section in PR webhooks is not included, instead, the webhook shows a github API link for the repository that shows files changed.
-Although this is a good idea to keep the payload lighter by not including it, it also creates the requirment to send a request to github API with github token that as for now theres no option to create automatically, which means that if we create repo scoped token (finegrained tokens, For better security) we need to do it manually after the terraform executed
+Although this is a good idea to keep the payload lighter by not including it, it also creates the requirment to send a request to github API with github token that as for now theres no option to create automatically, which means that if we want to create repo scoped token (finegrained tokens, For better security) we need to do it manually after the terraform executed, which adds another manual step that can be avoided so I decided to use terraform github token that is also with limited permissions
 there is open issue regarding this topic:
 https://github.com/go-gitea/gitea/issues/18216
 
