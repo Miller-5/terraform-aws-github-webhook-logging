@@ -14,3 +14,7 @@ variable "s3_bucket_name" {}
 variable "github_repository_name" {
   default = "github-webhook-logging-to-aws-example"
 }
+
+variable "github_repo_visibility" {
+  default = "private"
+}
