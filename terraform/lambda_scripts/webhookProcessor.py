@@ -33,7 +33,7 @@ def lambda_handler(event, context):
                 changed_files = fetch_changed_files(payload)
             except requests.exceptions.RequestException as e:
                 print(f"HTTP request failed: {e}")
-                raise
+                raise Exception(f"HTTP request failed: {e}")
 
 
             # Create the log entry
@@ -48,7 +48,7 @@ def lambda_handler(event, context):
             except ClientError as e:
                 raise Exception(f"Failed to upload to S3: {e}")
         else:
-            print(f"Invalid HMAC signature from IP: {record.get('attributes', {}).get('ApproximateFirstReceiveTimestamp')}")
+            print(f"Invalid HMAC signature, Timestamp: {record.get('attributes', {}).get('ApproximateFirstReceiveTimestamp')}")
             # We can apply here alert call, because 99% of failed validations means someone 
             # got access to our API GW and is trying to temper with the system
             # therefor we should investigate and act accordingly after getting an alert of this kind

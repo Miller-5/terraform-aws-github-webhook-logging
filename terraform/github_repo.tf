@@ -1,8 +1,9 @@
 resource "github_repository" "whToAws" {
   name        = var.github_repository_name
   description = "This repo is a part of terraform-aws-github-webhook-logging repository"
-  visibility = "public" # This is public for demonstration purposes  
-}
+  visibility = "public" # This is public for demonstration purposes
+                        #  However the infrastracture also works with private repository
+}                       #   Feel free to change this to private
 
 resource "random_password" "webhook_secret" {
   length  = 32
