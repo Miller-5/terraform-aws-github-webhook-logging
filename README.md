@@ -2,8 +2,12 @@
 
 This repository shows how we can set up an infrastructure automatically with github actions and terraform  
 This was an interesting and fun task, and I will explain why I chose this architecture, challanges along the way  
-and also out of scope improvments. 
+and also out of scope improvments.  
 
+### We can find the link for the repository created automatically with terraform here:
+### https://github.com/Miller-5/github-webhook-logging-to-aws-example
+
+---
 
 ## Architecture
 ### Lets start by a review of the architecture:
@@ -21,10 +25,13 @@ It can also handle <span style="color: blue; text-align: left;">heavy load</span
 And its also very <span style="color: green; text-align: left;">cost effective</span> because we pay only for the traffic we get, storage and querys.  
 This means this setup could be very cheap when theres no traffic, especially when some of the services we're using gives us free requests each month.  
 
+---
+
 ## Current setup
 This infrastructre can handle 10,000 (15,000 including throttling) **per second** without missing any webhook request (by our API GW) which is an overkill for our use case however its a good chance to show a robust system.  
 All relevant webhook requests get sent to SQS which triggers lambdas, Maximum concurrent lambda executions is 1000 (without throttling), by using SQS we make sure that no request is getting left out even when lambdas are overwhelmed
 
+---
 
 ## The flow
   
@@ -60,7 +67,7 @@ AWS Athena Query example:
  aws athena get-query-results --query-execution-id [QUERY_EXECUTION_ID_FROM_PREVIOUS_COMMAND]
 ```
 
-
+---
 
 ## How to use
 To set up and use this repo on our github & aws environment, we need to follow these steps:
@@ -69,6 +76,8 @@ To set up and use this repo on our github & aws environment, we need to follow t
 2. Each push to our github terraform repo will trigger github action that will run terraform to deploy the entire infrastructure, including github repo and AWS resources with the right configuration
 
 > Enjoy your new setup!
+
+---
 
 ## Interesting decisions choices
 * Github 'files changed' section in PR webhooks is not included, instead, the webhook shows a github API link for the repository that shows files changed.
@@ -79,6 +88,8 @@ https://github.com/go-gitea/gitea/issues/18216
 * I thought a lot about when to validate the payload with HMAC encryption, github webhook supports only HMAC and API GW does not support it, which is why we can use lambda function as a custom authorizer on API GW layer.  
 The issue with it is that lambda authorizator has the lambda maximum concurrent executors is 1000 which can be a bottleneck if its on the API GW layer (Even though it is still overkill for our usecase) however you always want to have the authorization/validation at the earliest layer you can in order to avoid invalid requests.  
 I tried to think on a creative solution and what I came up with is to use API GW to do basic validation with VTL script, and standard validation later on a lambda with alerts set up for failed validations, this way I get the most out of this infrastructure while not sacrificing important security measures to do so.
+
+---
 
 ## Out of scope improvments
 * We can have more logic in our github action workflow for better handling terraform, for example we can run terraform plan when we recieve a PR and terraform apply when merging this PR.
